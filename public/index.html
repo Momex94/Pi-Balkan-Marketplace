@@ -1,68 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Balkan Pi Marketplace</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <link rel="stylesheet" href="/styles.css" />
-</head>
-<body style="background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; padding: 2rem;">
-  <h1>Balkan Pi Marketplace</h1>
-
-  <button id="loginBtn" style="padding: 10px 20px; margin: 10px;">Pi Login</button>
-  <button id="payBtn" style="padding: 10px 20px; margin: 10px;">Plati 0.001 Test Pi</button>
-
-  <div id="output" style="margin-top: 20px;"></div>
-
-  <script>
-    const output = document.getElementById("output");
-
-    const scopes = ["username", "payments"];
-
-    document.getElementById("loginBtn").addEventListener("click", async () => {
-      try {
-        const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
-        output.innerHTML = `Prijavljen korisnik: <strong>${user.username}</strong>`;
-      } catch (error) {
-        output.innerHTML = `Greška prilikom prijave: ${error}`;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Balkan Pi Marketplace</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      // Inicijalizacija SDK - OBAVEZNO
+      Pi.init({ version: "2.0" });
+    </script>
+    <style>
+      body {
+        background-color: #121212;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 50px;
       }
-    });
 
-    document.getElementById("payBtn").addEventListener("click", async () => {
-      try {
-        const payment = await Pi.createPayment({
-          amount: 0.001,
-          memo: "Testna uplata za Balkan Pi Marketplace",
-          metadata: { type: "test" },
-        }, {
-          onReadyForServerApproval: paymentId => {
-            console.log("Ready for approval: ", paymentId);
-            // Ovdje bi backend poslao paymentId ka serveru
-          },
-          onReadyForServerCompletion: paymentId => {
-            console.log("Ready for completion: ", paymentId);
-            // Ovdje bi backend potvrdio payment
-          },
-          onCancel: paymentId => {
-            console.log("Otkazano: ", paymentId);
-            output.innerHTML = "Korisnik je otkazao plaćanje.";
-          },
-          onError: (error, payment) => {
-            console.error("Greška prilikom plaćanja", error);
-            output.innerHTML = `Greška: ${error}`;
-          },
-        });
-
-        output.innerHTML = `Plaćanje pokrenuto: ${payment.txid}`;
-      } catch (error) {
-        output.innerHTML = `Greška prilikom kreiranja plaćanja: ${error}`;
+      button {
+        background-color: #ffcc00;
+        color: black;
+        border: none;
+        padding: 15px 30px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 8px;
+        margin: 10px;
       }
-    });
 
-    function onIncompletePaymentFound(payment) {
-      console.log("Nepotpuna uplata pronađena", payment);
-    }
-  </script>
-</body>
+      #username {
+        margin-top: 20px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Balkan Pi Marketplace</h1>
+    <button onclick="loginWithPi()">Pi Login</button>
+    <button onclick="makeTestPayment()">Plati 0.001 Test Pi</button>
+
+    <div id="username"></div>
+
+    <script>
+      async function loginWithPi() {
+        try {
+          const scopes = ['username', 'payments'];
+          const result = await Pi.authenticate(scopes, onIncompletePaymentFound);
+          document.getElementById("username").innerText = "Zdravo, @" + result.user.username;
+          console.log("Korisnik:", result);
+        } catch (error) {
+          console.error("Greška prilikom logovanja:", error);
+        }
+      }
+
+      function onIncompletePaymentFound(payment) {
+        console.log("Nepotpuna uplata pronađena:", payment);
+      }
+
+      async function makeTestPayment() {
+        try {
+          const paymentData = {
+            amount: 0.001,
+            memo: "Test transakcija za Pi Balkan Marketplace",
+            metadata: { custom: "meta" }
+          };
+
+          const callbacks = {
+            onReadyForServerApproval: function (paymentId) {
+              console.log("Spreman za potvrdu servera:", paymentId);
+            },
+            onReadyForServerCompletion: function (paymentId, txid) {
+              console.log("Spreman za završetak:", paymentId, txid);
+            },
+            onCancel: function (paymentId) {
+              console.log("Korisnik je otkazao:", paymentId);
+            },
+            onError: function (error, payment) {
+              console.error("Greška prilikom plaćanja:", error, payment);
+            },
+          };
+
+          Pi.createPayment(paymentData, callbacks);
+        } catch (error) {
+          console.error("Greška prilikom kreiranja plaćanja:", error);
+        }
+      }
+    </script>
+  </body>
 </html>
+
