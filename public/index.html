@@ -15,6 +15,54 @@
 
   <div id="output" style="margin-top: 20px;"></div>
 
-  <script src="/scripts/main.js"></script>
+  <script>
+    const output = document.getElementById("output");
+
+    const scopes = ["username", "payments"];
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      try {
+        const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
+        output.innerHTML = `Prijavljen korisnik: <strong>${user.username}</strong>`;
+      } catch (error) {
+        output.innerHTML = `Greška prilikom prijave: ${error}`;
+      }
+    });
+
+    document.getElementById("payBtn").addEventListener("click", async () => {
+      try {
+        const payment = await Pi.createPayment({
+          amount: 0.001,
+          memo: "Testna uplata za Balkan Pi Marketplace",
+          metadata: { type: "test" },
+        }, {
+          onReadyForServerApproval: paymentId => {
+            console.log("Ready for approval: ", paymentId);
+            // Ovdje bi backend poslao paymentId ka serveru
+          },
+          onReadyForServerCompletion: paymentId => {
+            console.log("Ready for completion: ", paymentId);
+            // Ovdje bi backend potvrdio payment
+          },
+          onCancel: paymentId => {
+            console.log("Otkazano: ", paymentId);
+            output.innerHTML = "Korisnik je otkazao plaćanje.";
+          },
+          onError: (error, payment) => {
+            console.error("Greška prilikom plaćanja", error);
+            output.innerHTML = `Greška: ${error}`;
+          },
+        });
+
+        output.innerHTML = `Plaćanje pokrenuto: ${payment.txid}`;
+      } catch (error) {
+        output.innerHTML = `Greška prilikom kreiranja plaćanja: ${error}`;
+      }
+    });
+
+    function onIncompletePaymentFound(payment) {
+      console.log("Nepotpuna uplata pronađena", payment);
+    }
+  </script>
 </body>
 </html>
