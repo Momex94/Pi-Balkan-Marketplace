@@ -1,12 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import 'normalize.css';
-import './defaults.css';
-import Shop from './Shop';
+import PiPaymentButton from "../components/PiPaymentButton";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Shop />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+export default function Home() {
+  return (
+    <div>
+      <h1>Welcome to Balkan Pi Marketplace</h1>
+      <PiPaymentButton />
+    </div>
+  );
+}
