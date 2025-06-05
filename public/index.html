@@ -1,123 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Balkan Pi Marketplace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pi Balkan Marketplace</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
     body {
+      font-family: Arial, sans-serif;
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f6f8;
+      background-color: #f7f8fa;
+      color: #333;
     }
 
     header {
-      background-color: #111;
+      background-color: #4318ff;
       color: white;
-      padding: 1rem 2rem;
+      padding: 20px 40px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
     }
 
     header img {
       height: 50px;
     }
 
-    header nav a {
+    nav a {
       color: white;
-      margin-left: 1.5rem;
       text-decoration: none;
+      margin: 0 15px;
       font-weight: bold;
     }
 
     .hero {
-      background: linear-gradient(135deg, #a34de7, #7e22ce);
+      background: linear-gradient(to right, #4318ff, #a162f7);
       color: white;
-      padding: 6rem 2rem;
       text-align: center;
+      padding: 80px 20px;
     }
 
     .hero h1 {
-      font-size: 3rem;
-      margin-bottom: 1rem;
+      font-size: 3em;
+      margin-bottom: 10px;
     }
 
     .hero p {
-      font-size: 1.2rem;
-      max-width: 600px;
-      margin: 0 auto 2rem;
+      font-size: 1.2em;
+      max-width: 700px;
+      margin: 0 auto 30px;
     }
 
-    .btn-group {
-      margin-top: 2rem;
+    .buttons {
+      margin-top: 20px;
     }
 
-    .btn-group button {
-      background-color: white;
-      color: #7e22ce;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      font-size: 1rem;
-      border-radius: 5px;
-      margin: 0 0.5rem;
-      cursor: pointer;
+    #pi-login-button,
+    #pi-pay-button {
+      margin: 10px;
     }
 
     footer {
+      background-color: #f1f1f1;
       text-align: center;
-      padding: 1rem;
-      background-color: #111;
-      color: white;
-      font-size: 0.9rem;
-    }
-
-    footer a {
-      color: #7e22ce;
-      margin: 0 0.5rem;
-      text-decoration: none;
+      padding: 20px;
+      font-size: 14px;
+      color: #777;
     }
   </style>
+
+  <script defer src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    // Pi Login logic
+    function onPiLogin() {
+      Pi.authenticate(['username'], function(authData) {
+        console.log('Logged in:', authData);
+        // Add your own logic here
+      }, function(error) {
+        console.error('Login failed:', error);
+      });
+    }
+
+    // Pi Pay logic
+    function onPiPay() {
+      const paymentData = {
+        amount: 1,
+        memo: "Test payment",
+        metadata: { productId: 1234 }
+      };
+
+      Pi.createPayment(paymentData, {
+        onReadyForServerApproval(paymentId) {
+          console.log('Ready for approval:', paymentId);
+        },
+        onReadyForServerCompletion(paymentId, txid) {
+          console.log('Ready for completion:', paymentId, txid);
+        },
+        onCancel(paymentId) {
+          console.log('Payment cancelled:', paymentId);
+        },
+        onError(error, payment) {
+          console.error('Payment error:', error, payment);
+        }
+      });
+    }
+  </script>
 </head>
 
 <body>
   <header>
-    <img src="logo.jfif" alt="BPM Logo" />
+    <img src="logo.png" alt="BPM Logo">
     <nav>
-      <a href="#">Home</a>
-      <a href="#">Explore</a>
-      <a href="#">About</a>
+      <a href="#">Početna</a>
+      <a href="#">Proizvodi</a>
+      <a href="#">O nama</a>
+      <a href="#">Kontakt</a>
     </nav>
   </header>
 
-  <div class="hero">
-    <h1>Balkan Pi Marketplace</h1>
-    <p>Empowering Balkan businesses through Pi cryptocurrency — fast, secure, and zero fees.</p>
-    <div class="btn-group">
-      <!-- Pi Login Button (do not change ID or SDK hook) -->
-      <div id="pi-login-button"></div>
-      <!-- Pi Pay Button (do not change ID or SDK hook) -->
-      <div id="pi-pay-button"></div>
+  <section class="hero">
+    <h1>Dobrodošli na Pi Balkan Marketplace</h1>
+    <p>Prvi regionalni marketplace koji koristi Pi Coin za sigurne i brze transakcije. Jednostavno, brzo i decentralizovano.</p>
+
+    <div class="buttons">
+      <button id="pi-login-button" onclick="onPiLogin()">Pi Login</button>
+      <button id="pi-pay-button" onclick="onPiPay()">Pi Pay</button>
     </div>
-  </div>
+  </section>
 
   <footer>
-    <p>&copy; 2025 Balkan Pi Marketplace</p>
-    <a href="/terms.html">Terms</a>
-    <a href="/privacy.html">Privacy</a>
+    <p>&copy; 2025 Pi Balkan Marketplace. All rights reserved.</p>
+    <a href="#">Privacy Policy</a> | <a href="#">Terms & Conditions</a>
   </footer>
-
-  <!-- Pi SDK Scripts (must be included exactly) -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script>
-    // Do not touch: your login and pay logic should be here and preserved.
-    // Example:
-    Pi.init({ version: "2.0" });
-    Pi.authenticate(/* your logic here */);
-    Pi.createPayment(/* your logic here */);
-  </script>
 </body>
-
 </html>
