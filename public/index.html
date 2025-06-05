@@ -70,19 +70,18 @@
   </style>
 
   <script defer src="https://sdk.minepi.com/pi-sdk.js"></script>
+
   <script>
-    // Pi Login logic
     function onPiLogin() {
       Pi.authenticate(['username'], function(authData) {
         console.log('Logged in:', authData);
-        // Add your own logic here
+        // Ovde možeš poslati authData na svoj backend ako želiš da korisnika prijaviš na serveru
       }, function(error) {
         console.error('Login failed:', error);
       });
     }
 
-    // Pi Pay logic
-    function onPiPay() {
+    async function onPiPay() {
       const paymentData = {
         amount: 1,
         memo: "Test payment",
@@ -90,17 +89,46 @@
       };
 
       Pi.createPayment(paymentData, {
-        onReadyForServerApproval(paymentId) {
-          console.log('Ready for approval:', paymentId);
+        onReadyForServerApproval: async function (paymentId) {
+          console.log("Ready for approval:", paymentId);
+          try {
+            const res = await fetch("https://your-backend-url.com/api/payments/approve", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ paymentId })
+            });
+            const data = await res.json();
+            console.log("Approval response:", data);
+          } catch (err) {
+            console.error("Error approving payment:", err);
+          }
         },
-        onReadyForServerCompletion(paymentId, txid) {
-          console.log('Ready for completion:', paymentId, txid);
+
+        onReadyForServerCompletion: async function (paymentId, txid) {
+          console.log("Ready for completion:", paymentId, txid);
+          try {
+            const res = await fetch("https://your-backend-url.com/api/payments/complete", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ paymentId, txid })
+            });
+            const data = await res.json();
+            console.log("Completion response:", data);
+          } catch (err) {
+            console.error("Error completing payment:", err);
+          }
         },
+
         onCancel(paymentId) {
-          console.log('Payment cancelled:', paymentId);
+          console.log("Payment cancelled:", paymentId);
         },
+
         onError(error, payment) {
-          console.error('Payment error:', error, payment);
+          console.error("Payment error:", error, payment);
         }
       });
     }
@@ -130,7 +158,7 @@
 
   <footer>
     <p>&copy; 2025 Pi Balkan Marketplace. All rights reserved.</p>
-    <a href="#">Privacy Policy</a> | <a href="#">Terms & Conditions</a>
+    <a href="privacy-policy.html">Privacy Policy</a> | <a href="terms-of-service.html">Terms & Conditions</a>
   </footer>
 </body>
 </html>
